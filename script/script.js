@@ -13,14 +13,63 @@
 
  var database = firebase.database();
 
+ $("#submit").on("click", function () {
+     var trainInput = $("#train").val().trim();
+     var destinationInput = $("#destination").val().trim();
+     var firstTrainInput = $("#firstTrain").val().trim();
+     var frequencyInput = $("#frequency").val().trim();
+
+     database.ref().push({
+         trainName: trainInput,
+         destination: destinationInput,
+         firstTrain: firstTrainInput,
+         frequency: frequencyInput
+     })
+ })
+
+
+ //display data from initial load
  database.ref().on("child_added", function (snapshot) {
      var trainName = snapshot.val().trainName;
      var destination = snapshot.val().destination;
+     var firstTrain = snapshot.val().firstTrain;
      var frequency = snapshot.val().frequency;
-     var nextArrival = snapshot.val().nextArrival;
-     var minutesAway = snapshot.val().minutesAway;
+
+
+ // Assumptions
+ var tFrequency = frequency;
+
+ // first train time
+ var firstTime = firstTrain;
+
+ // First Time
+ var firstTimeConverted = moment(firstTime, "HH:mm")
+
+ // Current Time
+ var currentTime = moment();
+ console.log("CURRENT TIME: " + moment(currentTime).format("hh:mm"));
+
+ // Difference between the times
+ var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+ console.log("DIFFERENCE IN TIME: " + diffTime);
+
+ // Time apart (remainder)
+ var tRemainder = diffTime % tFrequency;
+ console.log(tRemainder);
+
+ // Minute Until Train
+ var tMinutesTillTrain = tFrequency - tRemainder;
+ console.log("MINUTES TILL TRAIN: " + tMinutesTillTrain);
+
+ // Next Train
+ var nextTrain = moment().add(tMinutesTillTrain, "minutes");
+ console.log("ARRIVAL TIME: " + moment(nextTrain).format("hh:mm"));
+
+ //next train arrival time
+ var nextTrainRev = moment(nextTrain).format("hh:mm A");
 
      var tr = $("<tr>");
+
      var td1 = $("<td>");
      td1.text(trainName);
      tr.append(td1);
@@ -34,12 +83,12 @@
      tr.append(td3);
 
      var td4 = $("<td>");
-     td4.text(nextArrival);
+     td4.text(nextTrainRev);
      tr.append(td4);
 
      var td5 = $("<td>");
-     td5.text(minutesAway);
+     td5.text(tMinutesTillTrain);
      tr.append(td5);
 
-     $("tbody"), append(tr);
- })
+     $("tbody").append(tr);
+ });
